@@ -40,7 +40,7 @@ function Login() {
     };
 
     return (
-        <div className="w-96 space-y-6 bg-white p-6 rounded-lg shadow-md">
+        <div className="w-96 space-y-6 bg-white">
             {/* Header */}
             <div className="text-center">
                 <h2 className="text-2xl font-bold">Welcome Back</h2>

@@ -25,16 +25,15 @@ function Login() {
         setValue,
         watch,
     } = useForm<LoginFormInputs>({
-        mode: "onBlur", // Runs validation on blur
-        reValidateMode: "onChange", // Revalidates on change
+        mode: "onBlur",
+        reValidateMode: "onChange",
     });
 
-    const watchFields = watch(["email", "password"]); // Watch input values
+    const watchFields = watch(["email", "password"]);
 
     const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
-        // Trigger validation manually before submitting
         const isValid = await trigger(["email", "password"]);
-        if (!isValid) return; // Stop submission if validation fails
+        if (!isValid) return;
 
         login(data.email, data.password);
     };

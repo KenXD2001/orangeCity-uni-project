@@ -10,57 +10,74 @@ body {
 
 :root {
   --background: oklch(1 0 0); /* White */
-  --foreground: oklch(0.145 0.155 264.6);
+  --foreground: oklch(0.1 0.05 0); /* Near black */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0.155 264.6);
+  --card-foreground: oklch(0.1 0.05 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0.155 264.6);
-  --primary: oklch(0.661 0.206 246.3);
-  --primary-foreground: oklch(0.965 0.016 231);
-  --secondary: oklch(0.96 0.014 231);
-  --secondary-foreground: oklch(0.26 0.09 264.6);
-  --muted: oklch(0.96 0.014 231);
-  --muted-foreground: oklch(0.54 0.04 244);
-  --accent: oklch(0.96 0.014 231);
-  --accent-foreground: oklch(0.26 0.09 264.6);
-  --destructive: oklch(0.6 0.25 27);
-  --destructive-foreground: oklch(0.965 0.016 231);
-  --border: oklch(0.91 0.02 244);
-  --input: oklch(0.91 0.02 244);
-  --ring: oklch(0.661 0.206 246.3);
+  --popover-foreground: oklch(0.1 0.05 0);
+
+  --primary: oklch(0.75 0.22 50); /* Vibrant Orange */
+  --primary-foreground: oklch(1 0 0); /* White */
+
+  --secondary: oklch(0.6 0.18 40); /* Muted Orange */
+  --secondary-foreground: oklch(0.1 0.05 0);
+
+  --muted: oklch(0.95 0.01 0); /* Light Gray */
+  --muted-foreground: oklch(0.35 0.04 40); /* Darker Orange */
+
+  --accent: oklch(0.8 0.2 30); /* Soft Warm Orange */
+  --accent-foreground: oklch(0.1 0.05 0);
+
+  --destructive: oklch(0.65 0.25 27); /* Dark Red-Orange */
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.85 0.02 30); /* Light Orange Border */
+  --input: oklch(0.85 0.02 30);
+  --ring: oklch(0.75 0.22 50); /* Vibrant Orange */
+
   --radius: 0.5rem;
-  --chart-1: oklch(0.7 0.25 57);
-  --chart-2: oklch(0.55 0.2 158);
-  --chart-3: oklch(0.45 0.15 202);
-  --chart-4: oklch(0.75 0.23 95);
-  --chart-5: oklch(0.78 0.22 74);
+
+  /* Chart Colors */
+  --chart-1: oklch(0.75 0.23 45); /* Deep Orange */
+  --chart-2: oklch(0.6 0.22 50); /* Dark Orange */
+  --chart-3: oklch(0.5 0.2 30); /* Muted Orange */
+  --chart-4: oklch(0.9 0.1 80); /* Light Peach */
+  --chart-5: oklch(0.95 0.08 10); /* Off-White */
 }
 
 .dark {
-  --background: oklch(0.145 0.155 264.6);
-  --foreground: oklch(0.965 0.016 231);
-  --card: oklch(0.145 0.155 264.6);
-  --card-foreground: oklch(0.965 0.016 231);
-  --popover: oklch(0.145 0.155 264.6);
-  --popover-foreground: oklch(0.965 0.016 231);
-  --primary: oklch(0.7 0.21 240);
-  --primary-foreground: oklch(0.26 0.09 264.6);
-  --secondary: oklch(0.3 0.06 245);
-  --secondary-foreground: oklch(0.965 0.016 231);
-  --muted: oklch(0.3 0.06 245);
-  --muted-foreground: oklch(0.6 0.05 244);
-  --accent: oklch(0.3 0.06 245);
-  --accent-foreground: oklch(0.965 0.016 231);
-  --destructive: oklch(0.5 0.22 27);
-  --destructive-foreground: oklch(0.965 0.016 231);
-  --border: oklch(0.3 0.06 245);
-  --input: oklch(0.3 0.06 245);
-  --ring: oklch(0.7 0.2 244);
-  --chart-1: oklch(0.6 0.22 240);
-  --chart-2: oklch(0.55 0.25 160);
-  --chart-3: oklch(0.75 0.23 30);
-  --chart-4: oklch(0.7 0.22 290);
-  --chart-5: oklch(0.7 0.25 350);
+  --background: oklch(0.1 0.05 0); /* Near Black */
+  --foreground: oklch(1 0 0); /* White */
+  --card: oklch(0.1 0.05 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.1 0.05 0);
+  --popover-foreground: oklch(1 0 0);
+
+  --primary: oklch(0.85 0.3 50); /* Bright Orange */
+  --primary-foreground: oklch(0.1 0.05 0);
+
+  --secondary: oklch(0.75 0.22 40); /* Warm Orange */
+  --secondary-foreground: oklch(1 0 0);
+
+  --muted: oklch(0.3 0.05 30); /* Dark Gray */
+  --muted-foreground: oklch(0.7 0.15 50); /* Lighter Orange */
+
+  --accent: oklch(0.7 0.2 30); /* Soft Dark Orange */
+  --accent-foreground: oklch(1 0 0);
+
+  --destructive: oklch(0.55 0.25 27); /* Deep Red-Orange */
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.5 0.1 30); /* Dark Orange Border */
+  --input: oklch(0.5 0.1 30);
+  --ring: oklch(0.85 0.3 50); /* Bright Orange */
+
+  /* Chart Colors */
+  --chart-1: oklch(0.8 0.3 50); /* Bright Orange */
+  --chart-2: oklch(0.6 0.25 40); /* Muted Dark Orange */
+  --chart-3: oklch(0.4 0.2 30); /* Deep Warm Brown */
+  --chart-4: oklch(0.75 0.23 20); /* Sunset Orange */
+  --chart-5: oklch(0.6 0.15 10); /* Darker Brown */
 }
 
 @theme inline {

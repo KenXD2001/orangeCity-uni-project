@@ -1,29 +1,44 @@
 import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 
+interface ForgotPasswordInputs {
+    emailOrPhone: string;
+    otp: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
 function ForgotPassword() {
-    const [step, setStep] = useState("request"); // Tracks the current step
-    const [form, setForm] = useState({ emailOrPhone: "", otp: "", newPassword: "", confirmPassword: "" });
+    const [step, setStep] = useState<"request" | "verify" | "reset">("request");
     const [otpSent, setOtpSent] = useState(false);
     const [timer, setTimer] = useState(30);
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState("");
 
-    // Send OTP Function
-    const handleSendOTP = () => {
-        if (!form.emailOrPhone) {
-            setError("Please enter an email or phone number.");
-            return;
-        }
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        setValue,
+        formState: { errors },
+        watch,
+    } = useForm<ForgotPasswordInputs>({
+        mode: "onBlur",
+        reValidateMode: "onChange",
+    });
+
+    const watchFields = watch(["emailOrPhone", "otp", "newPassword", "confirmPassword"]);
+
+    // Step 1: Send OTP
+    const handleSendOTP: SubmitHandler<{ emailOrPhone: string }> = () => {
         setOtpSent(true);
-        setStep("verify"); // Move to OTP verification step
+        setStep("verify");
         setTimer(30);
-        setError("");
 
-        // Start timer countdown
+        // Timer logic
         const interval = setInterval(() => {
             setTimer((prev) => {
                 if (prev <= 1) {
@@ -35,30 +50,15 @@ function ForgotPassword() {
         }, 1000);
     };
 
-    // OTP Verification Function
-    const handleVerifyOTP = () => {
-        if (form.otp.length !== 6) {
-            setError("Invalid OTP. Must be 6 digits.");
-            return;
-        }
-        setStep("reset"); // Move to password reset step
-        setError("");
+    // Step 2: Verify OTP
+    const handleVerifyOTP: SubmitHandler<{ otp: string }> = () => {
+        setStep("reset");
     };
 
-    // Reset Password Function
-    const handleResetPassword = () => {
-        if (!form.newPassword || form.newPassword.length < 6) {
-            setError("Password must be at least 6 characters.");
-            return;
-        }
-        if (form.newPassword !== form.confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-        }
-
+    // Step 3: Reset Password
+    const handleResetPassword: SubmitHandler<{ newPassword: string; confirmPassword: string }> = () => {
         alert("Password reset successful! 🎉");
         setStep("request");
-        setForm({ emailOrPhone: "", otp: "", newPassword: "", confirmPassword: "" });
     };
 
     return (
@@ -76,56 +76,79 @@ function ForgotPassword() {
                 </p>
             </div>
 
-            <div className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit(step === "request" ? handleSendOTP : step === "verify" ? handleVerifyOTP : handleResetPassword)}>
                 {/* Step 1: Enter Email or Phone */}
                 {step === "request" && (
-                    <>
+                    <div className="space-y-4">
                         <div className="relative flex items-center">
                             <Icon icon="mdi:email-outline" className="absolute left-2 text-gray-400" width={20} height={20} />
                             <Input
-                                className="pl-10 py-2"
+                                className={`pl-10 py-2 ${errors.emailOrPhone ? "border-red-500" : "border-gray-300"}`}
                                 placeholder="Email or Phone"
-                                value={form.emailOrPhone}
-                                onChange={(e) => setForm({ ...form, emailOrPhone: e.target.value })}
+                                {...register("emailOrPhone", {
+                                    required: "Email or phone is required",
+                                    pattern: {
+                                        value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$|^\d{10}$/,
+                                        message: "Enter a valid email or 10-digit phone number",
+                                    },
+                                    onChange: (e) => setValue("emailOrPhone", e.target.value, { shouldValidate: true }),
+                                })}
+                                onBlur={() => trigger("emailOrPhone")}
                             />
                         </div>
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button className="w-full py-2 font-semibold" onClick={handleSendOTP} disabled={otpSent && timer > 0}>
+                        {(watchFields[0] || errors.emailOrPhone) && <p className="text-red-500 text-sm">{errors.emailOrPhone?.message}</p>}
+
+                        <Button className="w-full py-2 font-semibold" type="submit" disabled={otpSent && timer > 0}>
                             {otpSent && timer > 0 ? `Resend OTP (${timer}s)` : "Send OTP"}
                         </Button>
-                    </>
+                    </div>
                 )}
 
                 {/* Step 2: Verify OTP */}
                 {step === "verify" && (
-                    <>
+                    <div className="space-y-4">
                         <div className="relative flex items-center">
                             <Icon icon="mdi:lock-outline" className="absolute left-2 text-gray-400" width={20} height={20} />
                             <Input
-                                className="pl-10 py-2"
+                                className={`pl-10 py-2 ${errors.otp ? "border-red-500" : "border-gray-300"}`}
                                 placeholder="Enter OTP"
-                                value={form.otp}
-                                onChange={(e) => setForm({ ...form, otp: e.target.value })}
+                                {...register("otp", {
+                                    required: "OTP is required",
+                                    pattern: {
+                                        value: /^\d{6}$/,
+                                        message: "OTP must be 6 digits",
+                                    },
+                                    onChange: (e) => setValue("otp", e.target.value, { shouldValidate: true }),
+                                })}
+                                onBlur={() => trigger("otp")}
                             />
                         </div>
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button className="w-full py-2 font-semibold" onClick={handleVerifyOTP}>
+                        {(watchFields[1] || errors.otp) && <p className="text-red-500 text-sm">{errors.otp?.message}</p>}
+
+                        <Button className="w-full py-2 font-semibold" type="submit">
                             Verify OTP
                         </Button>
-                    </>
+                    </div>
                 )}
 
                 {/* Step 3: Reset Password */}
                 {step === "reset" && (
-                    <>
+                    <div className="space-y-4">
                         <div className="relative flex items-center">
                             <Icon icon="mdi:lock-outline" className="absolute left-2 text-gray-400" width={20} height={20} />
                             <Input
-                                className="pl-10 pr-10 py-2"
+                                className={`pl-10 py-2 ${errors.newPassword ? "border-red-500" : "border-gray-300"}`}
                                 type={showPassword ? "text" : "password"}
                                 placeholder="New Password"
-                                value={form.newPassword}
-                                onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
+                                {...register("newPassword", {
+                                    required: "Password is required",
+                                    minLength: {
+                                        value: 6,
+                                        message: "Password must be at least 6 characters",
+                                    },
+                                    onChange: (e) => setValue("newPassword", e.target.value, { shouldValidate: true }),
+                                })}
+                                onBlur={() => trigger("newPassword")}
                             />
                             <button
                                 type="button"
@@ -135,36 +158,33 @@ function ForgotPassword() {
                                 <Icon icon={showPassword ? "ph:eye-slash" : "ph:eye"} width={22} height={22} />
                             </button>
                         </div>
+                        {(watchFields[2] || errors.newPassword) && <p className="text-red-500 text-sm">{errors.newPassword?.message}</p>}
 
                         <div className="relative flex items-center">
                             <Icon icon="mdi:lock-outline" className="absolute left-2 text-gray-400" width={20} height={20} />
                             <Input
-                                className="pl-10 py-2"
+                                className={`pl-10 py-2 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
                                 type="password"
                                 placeholder="Confirm Password"
-                                value={form.confirmPassword}
-                                onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                                {...register("confirmPassword", {
+                                    required: "Confirm Password is required",
+                                    validate: (value) => value === watch("newPassword") || "Passwords do not match",
+                                })}
+                                onBlur={() => trigger("confirmPassword")}
                             />
                         </div>
+                        {(watchFields[3] || errors.confirmPassword) && <p className="text-red-500 text-sm">{errors.confirmPassword?.message}</p>}
 
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button className="w-full py-2 font-semibold" onClick={handleResetPassword}>
+                        <Button className="w-full py-2 font-semibold" type="submit">
                             Reset Password
                         </Button>
-                    </>
+                    </div>
                 )}
+            </form>
 
-                {step !== "request" && (
-                    <p className="text-sm text-gray-500 text-center">
-                        <Link to="/auth/login" className="text-blue-600 font-medium">
-                            Back to Login
-                        </Link>
-                    </p>
-                )}
-            </div>
-            <p className="text-sm text-gray-500 text-right">
+            <p className="text-sm text-gray-500 text-center">
                 <Link to="/auth/login" className="text-blue-600 font-medium">
-                    Go to Login?
+                    Back to Login?
                 </Link>
             </p>
         </div>

@@ -1,12 +1,20 @@
 import { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 
+// Define form input types
+interface RegisterFormInputs {
+    name: string;
+    email: string;
+    mobile: string;
+    password: string;
+    confirmPassword: string;
+}
+
 function Register() {
-    const { login } = useAuth();
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -19,7 +27,6 @@ function Register() {
         confirmPassword: "",
     });
 
-    const [error, setError] = useState<string | null>(null);
     const [emailOtpSent, setEmailOtpSent] = useState(false);
     const [mobileOtpSent, setMobileOtpSent] = useState(false);
     const [emailVerified, setEmailVerified] = useState(false);
@@ -29,12 +36,27 @@ function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // React Hook Form setup
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        trigger,
+        setValue,
+        watch,
+    } = useForm<RegisterFormInputs>({
+        mode: "onBlur",
+        reValidateMode: "onChange",
+    });
+
+    const watchFields = watch(["name", "email", "mobile", "password", "confirmPassword"]);
+
     const sendOtp = (type: "email" | "mobile") => {
         if (type === "email" && !form.email) {
-            setError("Enter a valid email!");
+            alert("Enter a valid email!");
             return;
         } else if (type === "mobile" && !form.mobile) {
-            setError("Enter a valid mobile number!");
+            alert("Enter a valid mobile number!");
             return;
         }
 
@@ -67,117 +89,213 @@ function Register() {
         }
     };
 
-
     const verifyOtp = (type: "email" | "mobile") => {
-        if (type === "email" && form.emailOtp === "1234") {
-            setEmailVerified(true);
-        } else if (type === "mobile" && form.mobileOtp === "5678") {
-            setMobileVerified(true);
+        if (type === "email" && form.emailOtp !== "1234") {
+            alert("Invalid Email OTP!");
+        } else if (type === "mobile" && form.mobileOtp !== "5678") {
+            alert("Invalid Mobile OTP!");
         } else {
-            setError("Invalid OTP!");
+            setEmailVerified(type === "email");
+            setMobileVerified(type === "mobile");
         }
     };
 
-    const handleRegister = () => {
-        if (!emailVerified || !mobileVerified) {
-            setError("Verify both email and mobile before registering!");
-            return;
-        }
-        if (form.password !== form.confirmPassword) {
-            setError("Passwords do not match!");
-            return;
-        }
+    const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
+        const isValid = await trigger(["name", "email", "mobile", "password", "confirmPassword"]);
+        if (!isValid) return;
 
-        login(form.email, form.password);
-        navigate("/dashboard");
+        console.log("User registered:", data); // Use data before redirecting
+        navigate("/login");
     };
 
     return (
         <div className="w-96 space-y-4 bg-white">
-            <h2 className="text-2xl font-bold text-center">Create an Account</h2>
-
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-            <Input placeholder="Full Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-
-            {/* Email with OTP */}
-            <div className="relative flex items-center">
-                <Input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="pr-24" />
-                <Button className="absolute right-1" size="sm" onClick={() => sendOtp("email")} disabled={emailTimer > 0}>
-                    {emailOtpSent ? (emailTimer > 0 ? `Resend in ${emailTimer}s` : "Resend OTP") : "Send OTP"}
-                </Button>
+            {/* Header */}
+            <div className="text-center">
+                <h2 className="text-2xl font-bold">Create an Account</h2>
+                <p className="text-gray-500">Sign in to continue</p>
             </div>
 
-            {emailOtpSent && (
-                <div className="relative flex items-center">
-                    <Input placeholder="Enter Email OTP" value={form.emailOtp} onChange={(e) => setForm({ ...form, emailOtp: e.target.value })} disabled={emailVerified} className="pr-20" />
-                    <Button className="absolute right-1" size="sm" onClick={() => verifyOtp("email")} disabled={emailVerified}>
-                        {emailVerified ? "Verified ✅" : "Verify"}
-                    </Button>
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+                {/* Full Name */}
+                <div className="space-y-1">
+                    <div className="relative flex items-center">
+                        <Icon icon="ph:user" className="absolute left-2 text-gray-400" width={20} height={20} />
+                        <Input
+                            placeholder="Full Name"
+                            className={`pl-8 py-2 ${errors.name ? "border-red-500" : "border-gray-300"}`}
+                            {...register("name", {
+                                required: "Full Name is required",
+                                pattern: {
+                                    value: /^[a-zA-Z\s]+$/,
+                                    message: "Invalid Full Name (only letters and spaces allowed)",
+                                },
+                                onChange: (e) => {
+                                    setValue("name", e.target.value, { shouldValidate: true });
+                                },
+                            })}
+                            onBlur={() => trigger("name")}
+                        />
+                    </div>
+                    {(watchFields[0] || errors.name) && <p className="text-red-500 text-sm">{errors.name?.message}</p>}
                 </div>
-            )}
 
-            {/* Mobile with OTP */}
-            <div className="relative flex items-center">
-                <Input placeholder="Mobile Number" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} className="pr-24" />
-                <Button className="absolute right-1" size="sm" onClick={() => sendOtp("mobile")} disabled={mobileTimer > 0}>
-                    {mobileOtpSent ? (mobileTimer > 0 ? `Resend in ${mobileTimer}s` : "Resend OTP") : "Send OTP"}
-                </Button>
-            </div>
-
-            {mobileOtpSent && (
-                <div className="relative flex items-center">
-                    <Input placeholder="Enter Mobile OTP" value={form.mobileOtp} onChange={(e) => setForm({ ...form, mobileOtp: e.target.value })} disabled={mobileVerified} className="pr-20" />
-                    <Button className="absolute right-1" size="sm" onClick={() => verifyOtp("mobile")} disabled={mobileVerified}>
-                        {mobileVerified ? "Verified ✅" : "Verify"}
-                    </Button>
+                {/* Email with OTP */}
+                <div className="space-y-1">
+                    <div className="relative flex items-center">
+                        <Icon icon="ph:envelope-simple" className="absolute left-2 text-gray-400" width={20} height={20} />
+                        <Input
+                            placeholder="Email"
+                            className={`pl-8 py-2 pr-26 ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                            {...register("email", {
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                                    message: "Invalid Email",
+                                },
+                                onChange: (e) => {
+                                    setValue("email", e.target.value, { shouldValidate: true });
+                                },
+                            })}
+                            onBlur={() => trigger("email")}
+                        />
+                        <Button className="absolute right-1" size="sm" onClick={() => sendOtp("email")} disabled={emailTimer > 0}>
+                            {emailOtpSent ? (emailTimer > 0 ? `Resend in ${emailTimer}s` : "Resend OTP") : "Send OTP"}
+                        </Button>
+                    </div>
+                    {(watchFields[0] || errors.email) && <p className="text-red-500 text-sm">{errors.email?.message}</p>}
                 </div>
-            )}
 
-            {/* Password Field with Eye Button */}
-            <div className="relative">
-                <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                />
-                <button
-                    type="button"
-                    className="absolute inset-y-0 right-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
+                {/* Email OTP Verification */}
+                {emailOtpSent && (
+                    <div className="relative flex items-center">
+                        <Input
+                            placeholder="Enter Email OTP"
+                            className="pr-20"
+                            value={form.emailOtp}
+                            onChange={(e) => setForm((prev) => ({ ...prev, emailOtp: e.target.value }))}
+                            disabled={emailVerified}
+                        />
+                        <Button className="absolute right-1" size="sm" onClick={() => verifyOtp("email")} disabled={emailVerified}>
+                            {emailVerified ? "Verified ✅" : "Verify"}
+                        </Button>
+                    </div>
+                )}
+
+                {/* Mobile with OTP */}
+                <div className="space-y-1">
+                    <div className="relative flex items-center">
+                        <Icon icon="ph:phone" className="absolute left-2 text-gray-400" width={20} height={20} />
+                        <Input
+                            placeholder="Mobile Number"
+                            className={`pl-8 py-2 pr-26 ${errors.mobile ? "border-red-500" : "border-gray-300"}`}
+                            {...register("mobile", {
+                                required: "Mobile Number is required",
+                                pattern: {
+                                    value: /^[6-9]\d{9}$/,
+                                    message: "Invalid Mobile Number (must be 10 digits)",
+                                },
+                                onChange: (e) => {
+                                    setValue("mobile", e.target.value, { shouldValidate: true });
+                                },
+                            })}
+                            onBlur={() => trigger("mobile")}
+                        />
+                        <Button className="absolute right-1" size="sm" onClick={() => sendOtp("mobile")} disabled={mobileTimer > 0}>
+                            {mobileOtpSent ? (mobileTimer > 0 ? `Resend in ${mobileTimer}s` : "Resend OTP") : "Send OTP"}
+                        </Button>
+                    </div>
+                    {(watchFields[0] || errors.mobile) && <p className="text-red-500 text-sm">{errors.mobile?.message}</p>}
+                </div>
+
+                {/* Mobile OTP Verification */}
+                {mobileOtpSent && (
+                    <div className="relative flex items-center">
+                        <Input placeholder="Enter Mobile OTP" value={form.mobileOtp} onChange={(e) => setForm({ ...form, mobileOtp: e.target.value })} disabled={mobileVerified} className="pr-20" />
+                        <Button className="absolute right-1" size="sm" onClick={() => verifyOtp("mobile")} disabled={mobileVerified}>
+                            {mobileVerified ? "Verified ✅" : "Verify"}
+                        </Button>
+                    </div>
+                )}
+
+                {/* Password Field with Eye Button */}
+                <div className="space-y-1">
+                    <div className="relative flex items-center">
+                        <Icon icon="ph:password" className="absolute left-2 text-gray-400" width={20} height={20} />
+                        <Input
+                            placeholder="Password"
+                            type={showPassword ? "text" : "password"}
+                            className={`pl-8 py-2 ${errors.password ? "border-red-500" : "border-gray-300"}`}
+                            {...register("password", {
+                                required: "Password is required",
+                                pattern: {
+                                    value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/,
+                                    message: "Password must be at least 8 characters with letters and numbers",
+                                },
+                                onChange: (e) => {
+                                    setValue("password", e.target.value, { shouldValidate: true });
+                                },
+                            })}
+                            onBlur={() => trigger("password")}
+                        />
+                        <button
+                            type="button"
+                            className="absolute inset-y-0 right-3 flex items-center"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="text-gray-500 text-lg" />
+                        </button>
+                    </div>
+                    {(watchFields[0] || errors.password) && <p className="text-red-500 text-sm">{errors.password?.message}</p>}
+                </div>
+
+                {/* Confirm Password Field with Eye Button */}
+                <div className="space-y-1">
+                    <div className="relative flex items-center">
+                        <Icon icon="ph:password" className="absolute left-2 text-gray-400" width={20} height={20} />
+                        <Input
+                            placeholder="Confirm Password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            className={`pl-8 py-2 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
+                            {...register("confirmPassword", {
+                                required: "Confirm Password is required",
+                                pattern: {
+                                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                                    message: "Invalid Confirm Password",
+                                },
+                                onChange: (e) => {
+                                    setValue("confirmPassword", e.target.value, { shouldValidate: true });
+                                },
+                            })}
+                            onBlur={() => trigger("confirmPassword")}
+                        />
+                        <button
+                            type="button"
+                            className="absolute inset-y-0 right-3 flex items-center"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                            <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="text-gray-500 text-lg" />
+                        </button>
+                    </div>
+                    {(watchFields[0] || errors.confirmPassword) && <p className="text-red-500 text-sm">{errors.confirmPassword?.message}</p>}
+                </div>
+
+                {/* Register Button */}
+                <Button
+                    type="submit"
+                    className="w-full py-2 font-semibold"
                 >
-                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="text-gray-500 text-lg" />
-                </button>
-            </div>
+                    Create Account
+                </Button>
 
-            {/* Confirm Password Field with Eye Button */}
-            <div className="relative">
-                <Input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm Password"
-                    value={form.confirmPassword}
-                    onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                />
-                <button
-                    type="button"
-                    className="absolute inset-y-0 right-3 flex items-center"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                    <Icon icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} className="text-gray-500 text-lg" />
-                </button>
-            </div>
-
-            <Button className="w-full font-semibold py-2" onClick={handleRegister} disabled={!emailVerified || !mobileVerified}>
-                Sign Up
-            </Button>
-
-            <p className="text-sm text-gray-500 text-center">
-                Already have an account?{" "}
-                <Link to="/auth/login" className="text-blue-600 font-medium">
-                    Login
-                </Link>
-            </p>
+                {/* Login Button */}
+                <p className="text-sm text-gray-500 text-center">
+                    Already have an account?{" "}
+                    <Link to="/auth/login" className="text-blue-600 font-medium">
+                        Login
+                    </Link>
+                </p>
+            </form>
         </div>
     );
 }

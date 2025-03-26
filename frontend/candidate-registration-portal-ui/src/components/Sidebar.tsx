@@ -1,14 +1,32 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Home, User, Menu } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Define menu item structure
+interface MenuItem {
+    name: string;
+    path: string;
+    icon: string;
+}
+
+// Sidebar menu items
+const menuItems: MenuItem[] = [
+    { path: "/dashboard", name: "Dashboard", icon: "mdi:clipboard-text" },
+    { path: "/personal-details", name: "Personal Details", icon: "mdi:account-details" },
+    { path: "/qualification-details", name: "Qualification Details", icon: "mdi:school" },
+    { path: "/branch-preference", name: "Branch Preference Selection", icon: "mdi:map-marker-radius" },
+    { path: "/communication-details", name: "Communication Details", icon: "mdi:message-text" },
+    { path: "/documents-upload", name: "Documents Upload", icon: "mdi:file-upload" },
+    { path: "/application-preview", name: "Application Preview", icon: "mdi:eye" },
+    { path: "/payment-details", name: "Payment Details", icon: "mdi:credit-card" },
+    { path: "/application-status", name: "Application Status", icon: "mdi:check-circle" },
+];
+
 function Sidebar() {
     const location = useLocation();
-    const [collapsed, setCollapsed] = useState(() => {
-        return localStorage.getItem("sidebarCollapsed") === "true";
-    });
+    const [collapsed, setCollapsed] = useState(() => localStorage.getItem("sidebarCollapsed") === "true");
 
     useEffect(() => {
         localStorage.setItem("sidebarCollapsed", String(collapsed));
@@ -17,28 +35,49 @@ function Sidebar() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <aside className={cn("h-full bg-gray-900 text-white p-4 transition-all", collapsed ? "w-20" : "w-64")}>
+        <aside className={cn("h-full bg-white shadow-lg border-r border-gray-200 p-4 transition-all", collapsed ? "w-20" : "w-80")}>
             <div className="flex items-center justify-between">
-                {!collapsed && <h2 className="text-xl font-bold">Admin Panel</h2>}
+                {!collapsed && <h2 className="text-xl font-bold text-primary">Registration Portal</h2>}
                 <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)}>
-                    <Menu className="w-6 h-6" />
+                    <Icon icon="lucide:sidebar" className="w-6 h-6 text-primary" />
                 </Button>
             </div>
             <nav className="mt-6">
-                <ul>
-                    <li className="mb-2">
-                        <Link to="/dashboard" className={cn("flex items-center gap-2 p-2 rounded", isActive("/dashboard") ? "bg-gray-700" : "hover:bg-gray-700")}>
-                            <Home className="w-6 h-6" /> {!collapsed && "Dashboard"}
-                        </Link>
-                    </li>
-                    <li className="mb-2">
-                        <Link to="/profile" className={cn("flex items-center gap-2 p-2 rounded", isActive("/profile") ? "bg-gray-700" : "hover:bg-gray-700")}>
-                            <User className="w-6 h-6" /> {!collapsed && "Profile"}
-                        </Link>
-                    </li>
+                <ul className="space-y-1">
+                    {menuItems.map((item) => (
+                        <SidebarItem key={item.path} item={item} isActive={isActive(item.path)} collapsed={collapsed} />
+                    ))}
                 </ul>
             </nav>
         </aside>
+    );
+}
+
+// Define props type for SidebarItem
+interface SidebarItemProps {
+    item: MenuItem;
+    isActive: boolean;
+    collapsed: boolean;
+}
+
+// Reusable Sidebar Item Component
+function SidebarItem({ item, isActive, collapsed }: SidebarItemProps) {
+    return (
+        <li>
+            <Link
+                to={item.path}
+                className={cn(
+                    "flex items-center gap-3 py-3 rounded-lg transition-all border",
+                    "border-primary text-primary hover:text-white",
+                    "hover:bg-primary/80 hover:border-primary",
+                    isActive ? "bg-primary text-white" : "bg-transparent",
+                    collapsed ? "px-3" : "px-4"
+                )}
+            >
+                <Icon icon={item.icon} className="w-6 h-6 min-w-6 min-h-6" />
+                {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
+            </Link>
+        </li>
     );
 }
 

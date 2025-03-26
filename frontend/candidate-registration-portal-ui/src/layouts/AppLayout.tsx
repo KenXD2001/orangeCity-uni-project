@@ -16,12 +16,12 @@ const pageVariants = {
 
 function AppLayout({ children }: AppLayoutProps) {
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-hidden">
             <Sidebar />
             <div className="flex flex-col flex-1">
                 <Navbar />
                 <motion.main
-                    className="p-6"
+                    className="flex-1 overflow-auto p-6"
                     initial="initial"
                     animate="animate"
                     exit="exit"

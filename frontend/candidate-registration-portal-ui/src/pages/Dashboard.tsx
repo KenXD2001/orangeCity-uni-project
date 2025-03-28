@@ -85,8 +85,9 @@ const Dashboard = () => {
                         <Icon icon="mdi:phone" className="w-7 h-7 text-primary" />
                         <p className="font-semibold text-gray-800">Need Help?</p>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Contact our support team at <strong>+91 98765 43210</strong>.
+                    <p className="text-sm text-gray-600 mt-2 flex flex-col">
+                        <span>Contact our support team at</span>
+                        <strong>+91 98765 43210</strong>.
                     </p>
                 </Card>
             </div>

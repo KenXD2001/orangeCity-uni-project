@@ -16,7 +16,7 @@ const menuItems: MenuItem[] = [
     { path: "/dashboard", name: "Dashboard", icon: "mdi:clipboard-text" },
     { path: "/personal-details", name: "Personal Details", icon: "mdi:account-details" },
     { path: "/qualification-details", name: "Qualification Details", icon: "mdi:school" },
-    { path: "/branch-preference", name: "Branch Preference Selection", icon: "mdi:map-marker-radius" },
+    { path: "/branch-preference", name: "Branch Preference", icon: "mdi:map-marker-radius" },
     { path: "/communication-details", name: "Communication Details", icon: "mdi:message-text" },
     { path: "/documents-upload", name: "Documents Upload", icon: "mdi:file-upload" },
     { path: "/application-preview", name: "Application Preview", icon: "mdi:eye" },
@@ -35,7 +35,7 @@ function Sidebar() {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <aside className={cn("h-full bg-white shadow-lg border-r border-gray-200 p-4 transition-all", collapsed ? "w-20" : "w-80")}>
+        <aside className={cn("h-full bg-white shadow-lg border-r border-gray-200 p-4 transition-all", collapsed ? "w-20" : "w-64")}>
             <div className="flex items-center justify-between">
                 {!collapsed && <h2 className="text-xl font-bold text-primary">Registration Portal</h2>}
                 <Button variant="ghost" size="icon" onClick={() => setCollapsed(!collapsed)}>
@@ -67,14 +67,14 @@ function SidebarItem({ item, isActive, collapsed }: SidebarItemProps) {
             <Link
                 to={item.path}
                 className={cn(
-                    "flex items-center gap-3 py-3 rounded-lg transition-all border",
+                    "text-sm flex items-center gap-3 py-3 rounded-lg transition-all border",
                     "border-primary text-primary hover:text-white",
                     "hover:bg-primary/80 hover:border-primary",
                     isActive ? "bg-primary text-white" : "bg-transparent",
-                    collapsed ? "px-3" : "px-4"
+                    collapsed ? "px-2" : "px-3"
                 )}
             >
-                <Icon icon={item.icon} className="w-6 h-6 min-w-6 min-h-6" />
+                <Icon icon={item.icon} className="text-lg" />
                 {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
             </Link>
         </li>
